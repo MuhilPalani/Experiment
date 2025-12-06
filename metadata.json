@@ -1,0 +1,7 @@
+{
+  "name": "FlixPix",
+  "description": "An AI-powered mood-based movie recommendation engine that helps you find the perfect watch on Netflix.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
