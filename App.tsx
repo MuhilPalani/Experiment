@@ -17,6 +17,7 @@ function App() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   
   // 'home' or 'results'
   const [view, setView] = useState<'home' | 'results'>('home');
@@ -65,7 +66,15 @@ function App() {
     const searchMood = overrideMood || mood;
     if (!searchMood.trim()) return;
 
+    // Check for API Key presence
+    if (!import.meta.env.VITE_GEMINI_API_KEY) {
+      setErrorMessage("API Key is missing. Please configure GEMINI_API_KEY in your .env file or build settings.");
+      setLoadingState(LoadingState.ERROR);
+      return;
+    }
+
     setLoadingState(LoadingState.LOADING);
+    setErrorMessage('');
     setSummary(''); 
     setMovies([]);
     
@@ -96,6 +105,7 @@ function App() {
     } catch (error) {
       console.error(error);
       setLoadingState(LoadingState.ERROR);
+      setErrorMessage("Something went wrong while fetching recommendations. Please try again.");
     }
   };
 
@@ -175,6 +185,7 @@ function App() {
     setLoadingState(LoadingState.IDLE);
     setMood('');
     setProgress(0);
+    setErrorMessage('');
   };
 
   return (
@@ -299,7 +310,7 @@ function App() {
 
             {/* Error Message */}
             {loadingState === LoadingState.ERROR && (
-               <p className="text-red-500 font-bold mt-4">Something went wrong. Try again.</p>
+               <p className="text-red-500 font-bold mt-4">{errorMessage}</p>
             )}
 
           </div>

@@ -1,8 +1,19 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { RecommendationResponse } from "../types";
 
-// Initialize Gemini Client
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Lazy initialization to prevent crash on load if key is missing
+let ai: GoogleGenAI | null = null;
+
+const getAIClient = () => {
+  if (!ai) {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("API Key is missing. Please check your configuration.");
+    }
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
+};
 
 const movieSchema: Schema = {
   type: Type.OBJECT,
@@ -47,6 +58,8 @@ const responseSchema: Schema = {
 
 export const getMovieRecommendations = async (mood: string, filters?: string): Promise<RecommendationResponse> => {
   try {
+    const client = getAIClient();
+    
     const prompt = `
       You are FlixPix, a world-class cinema curator.
       
@@ -63,7 +76,7 @@ export const getMovieRecommendations = async (mood: string, filters?: string): P
       5. Output strictly in JSON.
     `;
 
-    const response = await ai.models.generateContent({
+    const response = await client.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
